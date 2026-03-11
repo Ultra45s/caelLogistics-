@@ -1,0 +1,7 @@
+{
+  "name": "TransLog Pro",
+  "description": "Sistema avançado de gestão de frota, manutenção preditiva e logística industrial para o mercado angolano.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

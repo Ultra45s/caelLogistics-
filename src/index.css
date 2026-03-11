@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+    --color-brand: var(--accent-color);
+    --color-brand-hover: var(--accent-hover);
+    --color-brand-text: var(--accent-text);
+    --color-surface: var(--panel-bg);
+    --color-card-bg: var(--card-bg);
+    --color-text-main: var(--text-color);
+    --color-muted: var(--muted-text);
+    --color-bg-main: var(--bg-color);
+}
+
+:root {
+    --bg-color: #020617;
+    --text-color: #f8fafc;
+    --panel-bg: rgba(255, 255, 255, 0.02);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --border-color: rgba(255, 255, 255, 0.06);
+    --accent-color: #2563eb;
+    --accent-hover: #3b82f6;
+    --accent-text: #60a5fa;
+    --muted-text: #94a3b8;
+    --overlay-bg: rgba(2, 6, 23, 0.85);
+    --overlay-bg-alt: rgba(2, 6, 23, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='light'] {
+    --bg-color: #f8fafc;
+    --text-color: #334155;
+    --panel-bg: rgba(255, 255, 255, 0.75);
+    --card-bg: rgba(255, 255, 255, 0.65);
+    --border-color: rgba(141, 73, 37, 0.15);
+    --accent-color: #c57d56;
+    --accent-hover: #8d4925;
+    --accent-text: #7b8635;
+    --muted-text: #64748b;
+    --overlay-bg: rgba(255, 255, 255, 0.40);
+    --overlay-bg-alt: rgba(248, 250, 252, 0.50);
+    --glass-border: rgba(141, 73, 37, 0.12);
+    --panel-shadow: 0 2px 10px 0 rgba(141, 73, 37, 0.02);
+}
+
+[data-theme='light'] svg {
+    filter: none !important;
+    box-shadow: none !important;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background-color: var(--bg-color);
+    font-family: 'Outfit', sans-serif;
+    scroll-behavior: smooth;
+    overflow: hidden;
+    position: fixed;
+    /* Prevents "bounce" on mobile */
+    color: var(--text-color);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glass Executive Background */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        linear-gradient(var(--overlay-bg), var(--overlay-bg-alt)),
+        url('/background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: -1;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow, 0 4px 24px 0 rgba(0, 0, 0, 0.1));
+    border-radius: 0.5rem;
+    /* 8px - Sharper and professional */
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.375rem;
+    /* 6px - Sharper and professional */
+}
+
+.glass-card:hover {
+    background: var(--card-bg);
+    border-color: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.scroll-container {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
