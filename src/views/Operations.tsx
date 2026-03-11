@@ -123,7 +123,7 @@ const Operations: React.FC<OperationsProps> = ({ operations, drivers, vehicles, 
             <div class="header">
               <div>
                 <h1>Comprovativo de Serviço</h1>
-                <p>Gestão de Ativos & Logística • CAEL Logists</p>
+                <p>Gestão de Ativos & Logística • cael logistics</p>
               </div>
               <div class="badge">${op.status}</div>
             </div>
@@ -169,7 +169,7 @@ const Operations: React.FC<OperationsProps> = ({ operations, drivers, vehicles, 
 
             <div class="doc-info">
               <span>ID Documento: ${op.id.split('-')[0].toUpperCase()}</span>
-              <span>Gerado via CAEL Logists v2.5</span>
+              <span>Gerado via cael logistics v2.5</span>
               <span>Página 1 de 1</span>
             </div>
           </div>

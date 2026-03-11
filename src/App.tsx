@@ -24,7 +24,7 @@ import { supabase } from './supabase';
 
 const App: React.FC = () => {
   const defaultAdmin: AdminProfile = {
-    name: 'Gestor CAEL Logists',
+    name: 'Gestor cael logistics',
     companyName: 'CAEL Angola',
     email: '',
     phone: ''

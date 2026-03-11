@@ -112,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
                             <Fingerprint className="text-white relative z-10" size={48} strokeWidth={2.5} />
                         </div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none mb-3">
-                            CAEL<span className="text-blue-400 ml-1">Logists</span>
+                            cael<span className="text-blue-400 ml-1">logistics</span>
                         </h1>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-2 bg-white/5 py-1.5 px-6 rounded-full border border-white/5">
                             Terminal Operacional Cloud

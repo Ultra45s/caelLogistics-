@@ -98,11 +98,11 @@ const Catalog: React.FC = () => {
         <div className="relative z-10 max-w-4xl">
           <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30 mb-6 md:mb-8 animate-in slide-in-from-left-4 duration-500">
             <ShieldCheck size={16} />
-            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-text-main">Sistema Certificado CAEL Logists</span>
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-text-main">Sistema Certificado cael logistics</span>
           </div>
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase mb-6 md:mb-8 leading-[1.1] md:leading-[0.9] text-text-main animate-in slide-in-from-left-8 duration-700 break-words">
             Terminal Logístico <br />
-            <span className="text-blue-500 font-black">CAEL Logists</span>
+            <span className="text-blue-500 font-black">cael logistics</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-500 font-bold leading-relaxed mb-8 md:mb-12 max-w-2xl animate-in slide-in-from-left-12 duration-1000">
             Uma solução integrada de alta performance para gestão de frotas, segurança do trabalho e inteligência operacional. Desenvolvido para o mercado logístico de Angola.
@@ -140,7 +140,7 @@ const Catalog: React.FC = () => {
         <div className="relative z-10 max-w-2xl text-center lg:text-left">
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-6 leading-[1.1] md:leading-none break-words">Pronto para a Escala Global</h2>
           <p className="text-base md:text-lg text-slate-400 font-bold leading-relaxed">
-            O CAEL Logists utiliza tecnologias de ponta como React 19, Firebase Cloud Firestore e Inteligência Artificial Generativa para garantir que sua operação nunca pare, independente do volume de dados.
+            O cael logistics utiliza tecnologias de ponta como React 19, Firebase Cloud Firestore e Inteligência Artificial Generativa para garantir que sua operação nunca pare, independente do volume de dados.
           </p>
         </div>
         <div className="relative z-10 flex flex-wrap justify-center gap-8 md:gap-16">

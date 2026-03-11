@@ -95,7 +95,7 @@ const Auditor: React.FC<{ data: AppState }> = ({ data }) => {
               <Brain size={40} className="animate-pulse" />
             </div>
             <div>
-              <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Logistics <span className="text-blue-400">IA Auditor</span></h2>
+              <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Logistics <span className="text-blue-400">cael logistics Auditor</span></h2>
               <p className="text-blue-300 font-black uppercase text-[10px] tracking-[0.4em] mt-2">Preditividade Industrial • Angola Standard</p>
             </div>
           </div>
