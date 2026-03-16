@@ -356,7 +356,7 @@ const Deliveries: React.FC<DeliveriesProps> = ({ deliveries, employees, epis, on
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Quantidade</label>
-                  <input required type="number" min="1" className="w-full p-6 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg" value={newDelivery.quantity} onChange={e => setNewDelivery({...newDelivery, quantity: Number(e.target.value)})} />
+                  <input required type="number" min="1" className="w-full p-6 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg" value={newDelivery.quantity === 0 ? '' : newDelivery.quantity} onChange={e => setNewDelivery({...newDelivery, quantity: e.target.value === '' ? 0 : Number(e.target.value)})} />
                 </div>
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Data da Movimentação</label>

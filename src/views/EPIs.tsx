@@ -177,7 +177,7 @@ const EPIs: React.FC<EPIsProps> = ({ epis, auth, onAdd, onDelete }) => {
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Prazo de Validade</label>
                   <input required type="number" min="1" className="w-full p-6 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg"
-                    value={newEpi.lifespanValue} onChange={e => setNewEpi({ ...newEpi, lifespanValue: Number(e.target.value) })} />
+                    value={newEpi.lifespanValue === 0 ? '' : newEpi.lifespanValue} onChange={e => setNewEpi({ ...newEpi, lifespanValue: e.target.value === '' ? 0 : Number(e.target.value) })} />
                 </div>
               </div>
 

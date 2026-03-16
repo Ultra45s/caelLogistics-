@@ -15,7 +15,6 @@ import {
     User,
     Settings
 } from 'lucide-react';
-import AppLogo from './AppLogo';
 import { AdminProfile } from '../types';
 
 export const navItems = [
@@ -55,7 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex flex-col h-full">
                 <div className="p-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <AppLogo className="w-12 h-12" />
                         <div className="flex flex-col">
                             <span className="text-xl font-black tracking-tighter uppercase leading-none">CAEL<span className="text-brand-text ml-1">Logists</span></span>
                             <span className="text-[8px] font-black text-muted uppercase tracking-[0.4em] mt-1">Terminal Operacional</span>

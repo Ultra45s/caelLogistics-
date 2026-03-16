@@ -400,7 +400,7 @@ const Fleet: React.FC<FleetProps> = ({ vehicles, maintenanceRecords, appData, au
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-black text-slate-500 uppercase">Intervalo ({newVehicle.type === AssetType.MACHINE || newVehicle.type === AssetType.CRANE_TRUCK ? 'Horas' : 'KM'})</label>
-                    <input type="number" className="w-full p-4 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" value={newVehicle.maintenanceIntervalKm} onChange={e => setNewVehicle({ ...newVehicle, maintenanceIntervalKm: Number(e.target.value) })} />
+                    <input type="number" className="w-full p-4 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" value={newVehicle.maintenanceIntervalKm === 0 ? '' : newVehicle.maintenanceIntervalKm} onChange={e => setNewVehicle({ ...newVehicle, maintenanceIntervalKm: e.target.value === '' ? 0 : Number(e.target.value) })} />
                   </div>
                 </div>
               </div>

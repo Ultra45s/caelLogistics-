@@ -741,8 +741,8 @@ const Maintenance: React.FC<MaintenanceProps> = ({ data, auth, onAdd, onUpdate, 
                     required
                     type="number"
                     className="w-full p-5 bg-white/5 border border-white/10 rounded-lg font-bold text-text-main outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
-                    value={selectedVehicle?.type === AssetType.MACHINE || selectedVehicle?.type === AssetType.CRANE_TRUCK ? (newRecord.currentHours || selectedVehicle?.currentHours || 0) : (newRecord.currentKm || selectedVehicle?.currentKm || '')}
-                    onChange={e => selectedVehicle?.type === AssetType.MACHINE || selectedVehicle?.type === AssetType.CRANE_TRUCK ? setNewRecord({ ...newRecord, currentHours: Number(e.target.value) }) : setNewRecord({ ...newRecord, currentKm: Number(e.target.value) })}
+                    value={selectedVehicle?.type === AssetType.MACHINE || selectedVehicle?.type === AssetType.CRANE_TRUCK ? (newRecord.currentHours === 0 ? '' : (newRecord.currentHours || selectedVehicle?.currentHours || '')) : (newRecord.currentKm === 0 ? '' : (newRecord.currentKm || selectedVehicle?.currentKm || ''))}
+                    onChange={e => selectedVehicle?.type === AssetType.MACHINE || selectedVehicle?.type === AssetType.CRANE_TRUCK ? setNewRecord({ ...newRecord, currentHours: e.target.value === '' ? 0 : Number(e.target.value) }) : setNewRecord({ ...newRecord, currentKm: e.target.value === '' ? 0 : Number(e.target.value) })}
                   />
                 </div>
                 <div className="space-y-3">
