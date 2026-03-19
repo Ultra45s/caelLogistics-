@@ -38,8 +38,16 @@ export enum DeliveryStatus {
   DAMAGED = 'Danificado/Extraviado'
 }
 
-export interface Employee {
+export type SyncStatus = 'pending' | 'synced' | 'error';
+
+export interface BaseEntity {
   id: string;
+  syncStatus?: SyncStatus;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Employee extends BaseEntity {
   name: string;
   biNumber: string;
   role: string;
@@ -49,8 +57,7 @@ export interface Employee {
   photoUrl?: string;
 }
 
-export interface EPI {
-  id: string;
+export interface EPI extends BaseEntity {
   name: string;
   category: string;
   lifespanValue: number;
@@ -58,8 +65,7 @@ export interface EPI {
   registrationDate: string;
 }
 
-export interface Delivery {
-  id: string;
+export interface Delivery extends BaseEntity {
   employeeId: string;
   epiId: string;
   deliveryDate: string;
@@ -68,8 +74,7 @@ export interface Delivery {
   justification?: string;
 }
 
-export interface MaintenanceRecord {
-  id: string;
+export interface MaintenanceRecord extends BaseEntity {
   vehicleId: string;
   type: MaintenanceType;
   description: string;
@@ -82,8 +87,7 @@ export interface MaintenanceRecord {
   attachments?: string[]; // Armazena base64 dos ficheiros
 }
 
-export interface Vehicle {
-  id: string;
+export interface Vehicle extends BaseEntity {
   name: string;
   plate: string;
   type: AssetType;
@@ -105,8 +109,7 @@ export interface Vehicle {
   currentHours?: number;
 }
 
-export interface Driver {
-  id: string;
+export interface Driver extends BaseEntity {
   name: string;
   biNumber: string;
   licenseNumber: string;
@@ -115,8 +118,7 @@ export interface Driver {
   photoUrl?: string;
 }
 
-export interface Operation {
-  id: string;
+export interface Operation extends BaseEntity {
   driverId: string;
   truckId: string;
   trailerId?: string;
@@ -152,8 +154,7 @@ export interface AdminProfile {
   logoUrl?: string;
 }
 
-export interface AppNotification {
-  id: string;
+export interface AppNotification extends BaseEntity {
   title: string;
   message: string;
   type: 'info' | 'warning' | 'error' | 'success';

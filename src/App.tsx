@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadFullState, saveToFirestore, deleteFromFirestore } from './db';
+import { initDB } from './services/localDb';
+import { syncEngine } from './services/syncEngine';
 
 import Layout from './components/Layout';
 import Login from './components/Login';
@@ -46,6 +48,12 @@ const App: React.FC = () => {
   const [vehiclesToUpdate, setVehiclesToUpdate] = useState<Vehicle[]>([]);
 
   useEffect(() => {
+    initDB().then(() => {
+      if (navigator.onLine) {
+        syncEngine.attemptSync().catch(console.warn);
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setCurrentUser({ uid: session.user.id, email: session.user.email || '' });

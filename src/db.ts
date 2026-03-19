@@ -1,5 +1,6 @@
-
 import { AppState, Operation, Driver, Vehicle, MaintenanceRecord, Employee, EPI, Delivery, AdminProfile, AssetType } from './types';
+import { dataFetchCollection, dataFetchAdmin, dataSaveDoc, dataDeleteDoc } from './services/dataService';
+import { localGet } from './services/localDb';
 
 // --- Funções de Utilidade ---
 
@@ -28,44 +29,20 @@ export const generateTestData = async () => {
   return Promise.resolve();
 };
 
-// --- Operações de Armazenamento Local ---
-
-const getLocalData = (uid: string): any => {
-  const data = localStorage.getItem(`translog_data_${uid}`);
-  return data ? JSON.parse(data) : {};
-};
-
-const setLocalData = (uid: string, data: any) => {
-  localStorage.setItem(`translog_data_${uid}`, JSON.stringify(data));
-};
+// --- Proxy para o Data Service (Offline-First) ---
 
 export const saveToFirestore = async (uid: string, col: string, id: string, data: any) => {
-  const allData = getLocalData(uid);
-  if (!allData[col]) allData[col] = [];
-
-  if (col === 'admin') {
-    allData[col] = data;
-  } else {
-    const index = allData[col].findIndex((i: any) => i.id === id);
-    if (index > -1) {
-      allData[col][index] = data;
-    } else {
-      allData[col].push(data);
-    }
-  }
-  setLocalData(uid, allData);
-  return Promise.resolve();
+  await dataSaveDoc(col, id, data);
 };
 
-export const fetchCollection = async <T>(uid: string, col: string): Promise<T[]> => {
-  const allData = getLocalData(uid);
-  return (allData[col] || []) as T[];
+export const fetchCollection = async <T extends { id: string }>(uid: string, col: string): Promise<T[]> => {
+  return dataFetchCollection<T>(col);
 };
 
 export const fetchDoc = async <T>(uid: string, col: string, id: string): Promise<T | null> => {
-  const allData = getLocalData(uid);
-  if (col === 'admin') return (allData[col] || null) as T;
-  return (allData[col]?.find((i: any) => i.id === id) || null) as T;
+  if (col === 'admin') return (await dataFetchAdmin() || null) as T;
+  const doc = await localGet<T>(col, id);
+  return doc || null;
 };
 
 export const loadFullState = async (uid: string): Promise<Partial<AppState>> => {
@@ -77,7 +54,7 @@ export const loadFullState = async (uid: string): Promise<Partial<AppState>> => 
     fetchCollection<Employee>(uid, 'employees'),
     fetchCollection<EPI>(uid, 'epis'),
     fetchCollection<Delivery>(uid, 'deliveries'),
-    fetchDoc<AdminProfile>(uid, 'admin', 'profile'),
+    dataFetchAdmin(),
     fetchCollection<any>(uid, 'notifications')
   ]);
 
@@ -99,12 +76,7 @@ export const uploadFile = async (path: string, base64: string): Promise<string> 
 };
 
 export const deleteFromFirestore = async (uid: string, col: string, id: string) => {
-  const allData = getLocalData(uid);
-  if (allData[col]) {
-    allData[col] = allData[col].filter((i: any) => i.id !== id);
-    setLocalData(uid, allData);
-  }
-  return Promise.resolve();
+  await dataDeleteDoc(col, id);
 };
 
 export const exportToCSV = (data: any[], filename: string) => {

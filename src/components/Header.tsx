@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, Sun, Moon, Bell } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
+import SyncStatusIndicator from './SyncStatusIndicator';
 import { AppNotification, AdminProfile } from '../types';
 import { navItems } from './Sidebar';
 
@@ -78,9 +79,8 @@ const Header: React.FC<HeaderProps> = ({
                     )}
                 </div>
 
-                <div className="hidden xl:flex items-center gap-4 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-black text-muted uppercase tracking-widest">Sincronizado com Nuvem</span>
+                <div className="hidden xl:flex items-center">
+                    <SyncStatusIndicator />
                 </div>
             </div>
         </header>
