@@ -29,7 +29,7 @@ interface TranslogDB extends DBSchema {
 }
 
 const DB_NAME = 'translog-pro-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<TranslogDB>> | null = null;
 
