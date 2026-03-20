@@ -24,8 +24,7 @@ export enum CargoType {
 export enum MaintenanceType {
   PREVENTIVE = 'Preventiva',
   CORRECTIVE = 'Corretiva',
-  INSPECTION = 'Inspeção',
-  GENERAL = 'Geral'
+  INSPECTION = 'Inspeção'
 }
 
 export type Gender = 'Masculino' | 'Feminino' | 'Outro';
@@ -163,11 +162,22 @@ export interface AppNotification extends BaseEntity {
   link?: string;
 }
 
+export interface FuelRecord extends BaseEntity {
+  vehicleId: string;
+  date: string;
+  quantityLiters: number;
+  amountPaid: number;
+  currentKmOrHours: number;
+  fuelType?: string;
+  observations?: string;
+}
+
 export interface AppState {
   drivers: Driver[];
   vehicles: Vehicle[];
   operations: Operation[];
   maintenanceRecords: MaintenanceRecord[];
+  fuelRecords: FuelRecord[];
   auth?: AuthData;
   admin?: AdminProfile;
   employees: Employee[];

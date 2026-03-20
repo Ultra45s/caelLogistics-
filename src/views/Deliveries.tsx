@@ -4,7 +4,7 @@ import { Delivery, DeliveryStatus, Employee, EPI } from '../types';
 import { 
   ClipboardList, Plus, Search, User, Package, ShieldAlert, 
   CheckCircle2, X, RefreshCcw, Zap, History, ChevronDown, 
-  SearchIcon, UserCircle, HardHat, AlertTriangle
+  SearchIcon, UserCircle, HardHat, AlertTriangle, Clock
 } from 'lucide-react';
 
 interface DeliveriesProps {
@@ -124,6 +124,13 @@ const SearchableSelect = <T extends { id: string; name: string; info?: string; p
 
 const Deliveries: React.FC<DeliveriesProps> = ({ deliveries, employees, epis, onAdd, onUpdateStatus }) => {
   const [showForm, setShowForm] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const [search, setSearch] = useState('');
   const [deliveryType, setDeliveryType] = useState<'normal' | 'replacement' | 'damaged'>('normal');
   const [isAutoReplace, setIsAutoReplace] = useState(false);
@@ -249,7 +256,7 @@ const Deliveries: React.FC<DeliveriesProps> = ({ deliveries, employees, epis, on
     let finalStatus = delivery.status;
     if (diffDays < 0) finalStatus = DeliveryStatus.EXPIRED;
 
-    return { status: finalStatus, diffDays };
+    return { status: finalStatus, diffDays, expirationDate };
   };
 
   const filtered = deliveries.filter(d => {
@@ -438,18 +445,32 @@ const Deliveries: React.FC<DeliveriesProps> = ({ deliveries, employees, epis, on
                       </div>
                     </td>
                     <td className="px-10 py-8 text-center">
-                      <span className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3 border transition-all duration-500
-                        ${isExpired ? 'bg-rose-600/20 text-rose-400 border-rose-500/30 shadow-2xl shadow-rose-600/20 animate-pulse' : 
-                          isWarning ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 shadow-2xl shadow-amber-500/10' :
-                          !isActive ? 'bg-white/5 text-slate-700 border-white/5' :
-                          info.status === DeliveryStatus.IN_USE ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-2xl shadow-emerald-500/10' : 
-                          'bg-white/5 text-slate-500 border-white/5'}
-                      `}>
-                        {isExpired ? <ShieldAlert size={14} /> : 
-                         isWarning ? <AlertTriangle size={14} /> : 
-                         !isActive ? <History size={14} /> : <CheckCircle2 size={14} />}
-                        {isExpired ? 'Vencimento Crítico' : isWarning ? `Substituir em ${info.diffDays}d` : !isActive ? 'Histórico' : 'Operação Ativa'}
-                      </span>
+                      {isActive && info.expirationDate ? (() => {
+                        const ms = info.expirationDate.getTime() - now;
+                        let cdString = '';
+                        if (ms > 0) {
+                          const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                          const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                          const s = Math.floor((ms % (1000 * 60)) / 1000);
+                          cdString = ms > (1000 * 60 * 60 * 24) ? `${Math.floor(ms / (1000 * 60 * 60 * 24))}d ${h}h ${m}m ${s}s` : `${h}h ${m}m ${s}s`;
+                        }
+                        
+                        return (
+                          <span className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3 border transition-all duration-500
+                            ${isExpired ? 'bg-rose-600/20 text-rose-400 border-rose-500/30 shadow-2xl shadow-rose-600/20 animate-pulse' : 
+                              isWarning ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 shadow-2xl shadow-amber-500/10' :
+                              'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-2xl shadow-emerald-500/10'}
+                          `}>
+                            {isExpired ? <ShieldAlert size={14} /> : 
+                             isWarning ? <AlertTriangle size={14} /> : <Clock size={14} />}
+                            {isExpired ? 'Vencimento Crítico' : cdString}
+                          </span>
+                        );
+                      })() : (
+                        <span className={`px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-3 border transition-all duration-500 bg-white/5 text-slate-700 border-white/5`}>
+                          <History size={14} /> Histórico
+                        </span>
+                      )}
                     </td>
                     <td className="px-10 py-8">
                       <div className="flex items-center justify-between gap-8">

@@ -16,6 +16,7 @@ import Deliveries from './views/Deliveries';
 import AdminProfileView from './views/AdminProfile';
 import Auditor from './views/Auditor';
 import Catalog from './views/Catalog';
+import FuelControl from './views/FuelControl';
 
 import UsageUpdateModal from './components/UsageUpdateModal';
 import { AppState, AdminProfile, AppNotification, Vehicle } from './types';
@@ -261,6 +262,15 @@ const App: React.FC = () => {
           onAdd={v => syncAdd('vehicles', v)}
           onDelete={id => syncDelete('vehicles', id)}
           onUpdate={v => syncUpdate('vehicles', v)}
+        />
+      )}
+      {activeTab === 'fuel' && (
+        <FuelControl
+          fuelRecords={appData.fuelRecords || []}
+          vehicles={appData.vehicles}
+          onAdd={r => syncAdd('fuelRecords', r)}
+          onUpdate={r => syncUpdate('fuelRecords', r)}
+          onDelete={id => syncDelete('fuelRecords', id)}
         />
       )}
       {activeTab === 'operations' && (

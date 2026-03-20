@@ -5,7 +5,7 @@ import { hashCredential } from '../db';
 import {
   Search, UserPlus, Trash2, Camera, ImageIcon, X,
   Edit3, Printer, ShieldAlert, FilterX,
-  Boxes, Package, UserCircle, Lock, Loader2, FileText, CheckCircle
+  Boxes, Package, UserCircle, Lock, Loader2, FileText, CheckCircle, Clock
 } from 'lucide-react';
 
 interface EmployeesProps {
@@ -37,6 +37,13 @@ const Employees: React.FC<EmployeesProps> = ({ employees, deliveries, epis, admi
   const [newEmp, setNewEmp] = useState<Partial<Employee>>({
     name: '', biNumber: '', role: '', area: '', gender: 'Masculino', admissionDate: new Date().toISOString().split('T')[0], photoUrl: ''
   });
+
+  const [now, setNow] = useState(Date.now());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const getEpiInfo = (delivery: Delivery) => {
     try {
@@ -444,18 +451,46 @@ const Employees: React.FC<EmployeesProps> = ({ employees, deliveries, epis, admi
             </div>
             <div className="flex-1 overflow-y-auto pr-4 scroll-container space-y-6">
               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-3 px-2 mb-6">Itens em Uso Ativo</h4>
-              {getEmployeeAssets(viewingItemsFor.id).length > 0 ? getEmployeeAssets(viewingItemsFor.id).map((asset, idx) => (
-                <div key={idx} className={`p-8 rounded-lg border transition-all flex items-center justify-between gap-6 ${asset.info?.isExpired ? 'bg-rose-600/10 border-rose-500/30 shadow-lg shadow-rose-600/5' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
-                  <div className="flex items-center gap-6">
-                    <div className="w-14 h-14 rounded-lg bg-slate-950 text-text-main flex items-center justify-center border border-white/5 shadow-inner group-hover:bg-blue-600/20 transition-all"><Package size={28} /></div>
-                    <div>
-                      <p className="text-lg font-black text-text-main uppercase tracking-tight leading-none">{asset.info?.epiName}</p>
-                      <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-3">Vencimento: {asset.info?.expirationDate.toLocaleDateString()}</p>
+              {getEmployeeAssets(viewingItemsFor.id).length > 0 ? getEmployeeAssets(viewingItemsFor.id).map((asset, idx) => {
+                let countdownStatus = 'healthy';
+                let cdString = '';
+                
+                if (asset.info) {
+                  const ms = asset.info.expirationDate.getTime() - now;
+                  if (ms <= 0) {
+                    countdownStatus = 'expired';
+                  } else {
+                    const diffDays = Math.floor(ms / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 7) countdownStatus = 'warning';
+                    
+                    const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((ms % (1000 * 60)) / 1000);
+                    cdString = diffDays > 0 ? `${diffDays}d ${h}h ${m}m ${s}s` : `${h}h ${m}m ${s}s`;
+                  }
+                }
+
+                return (
+                  <div key={idx} className={`p-8 rounded-lg border transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${countdownStatus === 'expired' ? 'bg-rose-600/10 border-rose-500/30 shadow-lg shadow-rose-600/5' : countdownStatus === 'warning' ? 'bg-amber-500/10 border-amber-500/30 shadow-lg shadow-amber-500/5' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 rounded-lg bg-slate-950 text-text-main flex items-center justify-center border border-white/5 shadow-inner group-hover:bg-blue-600/20 transition-all"><Package size={28} /></div>
+                      <div>
+                        <p className="text-lg font-black text-text-main uppercase tracking-tight leading-none">{asset.info?.epiName}</p>
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-2">{asset.info?.expirationDate.toLocaleDateString()}</p>
+                      </div>
                     </div>
+                    {countdownStatus === 'expired' ? (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/30 animate-pulse">
+                        <ShieldAlert size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">Expirado</span>
+                      </div>
+                    ) : (
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border shadow-sm ${countdownStatus === 'warning' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+                        <Clock size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">{cdString}</span>
+                      </div>
+                    )}
                   </div>
-                  {asset.info?.isExpired && <div className="p-3 bg-rose-600/20 text-rose-400 rounded-lg border border-rose-500/30 animate-pulse"><ShieldAlert size={24} /></div>}
-                </div>
-              )) : (
+                );
+              }) : (
                 <div className="py-24 text-center glass-panel rounded-lg border-2 border-dashed border-white/10">
                   <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-900 border border-white/5"><Package size={40} /></div>
                   <p className="text-slate-700 font-black uppercase text-[10px] tracking-[0.3em] opacity-40">Nenhum item em uso</p>

@@ -1,4 +1,4 @@
-import { AppState, Operation, Driver, Vehicle, MaintenanceRecord, Employee, EPI, Delivery, AdminProfile, AssetType } from './types';
+import { AppState, Operation, Driver, Vehicle, MaintenanceRecord, Employee, EPI, Delivery, AdminProfile, AssetType, FuelRecord, MaintenanceType } from './types';
 import { dataFetchCollection, dataFetchAdmin, dataSaveDoc, dataDeleteDoc } from './services/dataService';
 import { localGet } from './services/localDb';
 
@@ -46,7 +46,7 @@ export const fetchDoc = async <T>(uid: string, col: string, id: string): Promise
 };
 
 export const loadFullState = async (uid: string): Promise<Partial<AppState>> => {
-  const [drivers, vehicles, operations, maintenance, employees, epis, deliveries, admin, notifications] = await Promise.all([
+  const [drivers, vehicles, operations, maintenance, employees, epis, deliveries, admin, notifications, fuelRecords] = await Promise.all([
     fetchCollection<Driver>(uid, 'drivers'),
     fetchCollection<Vehicle>(uid, 'vehicles'),
     fetchCollection<Operation>(uid, 'operations'),
@@ -55,19 +55,29 @@ export const loadFullState = async (uid: string): Promise<Partial<AppState>> => 
     fetchCollection<EPI>(uid, 'epis'),
     fetchCollection<Delivery>(uid, 'deliveries'),
     dataFetchAdmin(),
-    fetchCollection<any>(uid, 'notifications')
+    fetchCollection<any>(uid, 'notifications'),
+    fetchCollection<FuelRecord>(uid, 'fuelRecords')
   ]);
+
+  // Migração em tempo de execução para Manutenção Geral -> Preventiva
+  const migratedMaintenance = maintenance.map(m => {
+    if ((m.type as string) === 'Geral') {
+      return { ...m, type: MaintenanceType.PREVENTIVE };
+    }
+    return m;
+  });
 
   return {
     drivers,
     vehicles,
     operations,
-    maintenanceRecords: maintenance,
+    maintenanceRecords: migratedMaintenance,
     employees,
     epis,
     deliveries,
     admin: admin || undefined,
-    notifications
+    notifications,
+    fuelRecords
   };
 };
 

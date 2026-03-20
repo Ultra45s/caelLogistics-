@@ -1,7 +1,7 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { 
   Driver, Vehicle, Operation, MaintenanceRecord, 
-  Employee, EPI, Delivery, AppNotification, AdminProfile 
+  Employee, EPI, Delivery, AppNotification, AdminProfile, FuelRecord 
 } from '../types';
 
 export interface SyncOp {
@@ -19,6 +19,7 @@ interface TranslogDB extends DBSchema {
   vehicles: { key: string; value: Vehicle };
   operations: { key: string; value: Operation };
   maintenanceRecords: { key: string; value: MaintenanceRecord };
+  fuelRecords: { key: string; value: FuelRecord };
   employees: { key: string; value: Employee };
   epis: { key: string; value: EPI };
   deliveries: { key: string; value: Delivery };
@@ -38,7 +39,7 @@ export const initDB = () => {
       upgrade(db) {
         const collections = [
           'drivers', 'vehicles', 'operations', 'maintenanceRecords',
-          'employees', 'epis', 'deliveries', 'notifications', 'admin'
+          'fuelRecords', 'employees', 'epis', 'deliveries', 'notifications', 'admin'
         ];
         
         collections.forEach(col => {

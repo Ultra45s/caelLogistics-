@@ -4,7 +4,7 @@ import { AppState, ServiceStatus, AssetType, DeliveryStatus } from '../types';
 import {
   Truck, Container, Users, AlertTriangle, Activity, Zap,
   HardHat, ShieldCheck, ClipboardCheck, Wrench, ArrowUpRight,
-  Clock, FileText, ChevronRight
+  Clock, FileText, ChevronRight, Droplet
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -63,6 +63,26 @@ const Dashboard: React.FC<DashboardProps> = ({ data, setActiveTab }) => {
     { name: 'Críticos', value: maintenanceAlerts + epiAlerts, color: '#f43f5e' }
   ];
 
+  const topConsumers = useMemo(() => {
+    if (!data.fuelRecords || data.fuelRecords.length === 0) return [];
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const consumptionMap = new Map<string, number>();
+    data.fuelRecords.filter(r => new Date(r.date) >= thirtyDaysAgo).forEach(r => {
+      consumptionMap.set(r.vehicleId, (consumptionMap.get(r.vehicleId) || 0) + r.quantityLiters);
+    });
+    
+    return Array.from(consumptionMap.entries())
+      .map(([vehicleId, liters]) => ({
+        vehicle: data.vehicles.find(v => v.id === vehicleId),
+        liters
+      }))
+      .filter(x => x.vehicle)
+      .sort((a, b) => b.liters - a.liters)
+      .slice(0, 5);
+  }, [data.fuelRecords, data.vehicles]);
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 scroll-container">
       {/* Hero Header */}
@@ -107,35 +127,70 @@ const Dashboard: React.FC<DashboardProps> = ({ data, setActiveTab }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Monitor de Atividade Recente */}
-        <div className="lg:col-span-2 glass-panel p-8 rounded-lg border border-white/10 shadow-sm overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-sm font-black text-text-main uppercase tracking-tight flex items-center gap-2">
-              <Activity size={20} className="text-blue-400" /> Histórico Operacional Recente
-            </h3>
-            <button onClick={() => setActiveTab('operations')} className="text-[10px] font-black text-blue-400 uppercase tracking-widest hover:underline">Ver Todos</button>
-          </div>
+        <div className="lg:col-span-2 space-y-8">
+          <div className="glass-panel p-8 rounded-lg border border-white/10 shadow-sm overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-sm font-black text-text-main uppercase tracking-tight flex items-center gap-2">
+                <Activity size={20} className="text-blue-400" /> Histórico Operacional Recente
+              </h3>
+              <button onClick={() => setActiveTab('operations')} className="text-[10px] font-black text-blue-400 uppercase tracking-widest hover:underline">Ver Todos</button>
+            </div>
 
-          <div className="space-y-3 flex-1">
-            {data.operations.slice(-5).reverse().map((op, i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-all group">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Truck size={18} className="text-blue-400" />
+            <div className="space-y-3 flex-1">
+              {data.operations.slice(-5).reverse().map((op, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Truck size={18} className="text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-text-main uppercase leading-none mb-1">{op.client}</p>
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{op.status} • {op.origin} - {op.destination}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-black text-text-main uppercase leading-none mb-1">{op.client}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{op.status} • {op.origin} - {op.destination}</p>
-                  </div>
+                  <span className="text-[10px] font-black text-slate-500">{op.startDate}</span>
                 </div>
-                <span className="text-[10px] font-black text-slate-500">{op.startDate}</span>
-              </div>
-            ))}
-            {data.operations.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-700">
-                <FileText size={48} className="opacity-20" />
-                <p className="text-[10px] font-black uppercase tracking-widest mt-4 opacity-40">Nenhum registro no arquivo</p>
-              </div>
-            )}
+              ))}
+              {data.operations.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-slate-700">
+                  <FileText size={48} className="opacity-20" />
+                  <p className="text-[10px] font-black uppercase tracking-widest mt-4 opacity-40">Nenhum registro no arquivo</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Top Consumidores (Abastecimento) */}
+          <div className="glass-panel p-8 rounded-lg border border-white/10 shadow-sm overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-sm font-black text-text-main uppercase tracking-tight flex items-center gap-2">
+                <Droplet size={20} className="text-amber-400" /> Top Consumidores (30 Dias)
+              </h3>
+              <button onClick={() => setActiveTab('fuel')} className="text-[10px] font-black text-amber-400 uppercase tracking-widest hover:underline">Ver Tabela</button>
+            </div>
+            
+            <div className="space-y-3 flex-1">
+              {topConsumers.map((tc, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                      <Truck size={18} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-text-main uppercase leading-none mb-1">{tc.vehicle?.plate}</p>
+                      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">{tc.vehicle?.brand}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-blue-400">{tc.liters.toLocaleString()} L</span>
+                </div>
+              ))}
+              {topConsumers.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-700">
+                  <Droplet size={32} className="opacity-20" />
+                  <p className="text-[10px] font-black uppercase tracking-widest mt-4 opacity-40">Sem abastecimentos recentes</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -201,4 +256,3 @@ const Dashboard: React.FC<DashboardProps> = ({ data, setActiveTab }) => {
 };
 
 export default Dashboard;
-

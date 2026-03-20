@@ -13,13 +13,15 @@ import {
     Brain,
     X,
     User,
-    Settings
+    Settings,
+    Droplet
 } from 'lucide-react';
 import { AdminProfile } from '../types';
 
 export const navItems = [
     { id: 'dashboard', label: 'Monitoramento', icon: LayoutDashboard, category: 'Geral' },
     { id: 'fleet', label: 'Frota e Máquinas', icon: Truck, category: 'Logística' },
+    { id: 'fuel', label: 'Abastecimentos', icon: Droplet, category: 'Logística' },
     { id: 'operations', label: 'Entregas e Serviços', icon: Container, category: 'Logística' },
     { id: 'maintenance', label: 'Manutenção', icon: Wrench, category: 'Logística' },
     { id: 'employees', label: 'Colaboradores', icon: Users, category: 'Segurança' },

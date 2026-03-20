@@ -72,5 +72,46 @@ export const checkMaintenanceAlerts = (state: AppState): AppNotification[] => {
     }
   });
 
+  // Fuel Consumption Checks
+  if (state.fuelRecords && state.fuelRecords.length > 0) {
+    state.vehicles.forEach(vehicle => {
+      const vRecords = state.fuelRecords
+        .filter(r => r.vehicleId === vehicle.id)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.currentKmOrHours - b.currentKmOrHours);
+      
+      if (vRecords.length < 2) return;
+      
+      const consumptions: number[] = [];
+      for (let i = 1; i < vRecords.length; i++) {
+        const dist = vRecords[i].currentKmOrHours - vRecords[i-1].currentKmOrHours;
+        const liters = vRecords[i].quantityLiters;
+        if (dist > 0 && liters > 0) consumptions.push(dist / liters);
+      }
+      
+      if (consumptions.length >= 2) {
+        const latestCons = consumptions[consumptions.length - 1];
+        const prevConsAvg = consumptions.slice(0, -1).reduce((a, b) => a + b, 0) / (consumptions.length - 1);
+        
+        // Deviation of > 30% from historical average
+        const deviation = Math.abs(latestCons - prevConsAvg) / prevConsAvg;
+        if (deviation > 0.3) {
+          const lastRec = vRecords[vRecords.length - 1];
+          const id = `fuel-alert-${vehicle.id}-${lastRec.id}`;
+          if (!state.notifications.some(n => n.id === id)) {
+            newNotifications.push({
+              id,
+              title: 'Alerta de Consumo Anormal',
+              message: `A viatura ${vehicle.plate} registrou um desvio de ${(deviation * 100).toFixed(0)}% no consumo. Média: ${prevConsAvg.toFixed(2)}, Última: ${latestCons.toFixed(2)}.`,
+              type: 'warning',
+              date: now.toISOString(),
+              read: false,
+              link: 'fuel'
+            });
+          }
+        }
+      }
+    });
+  }
+
   return newNotifications;
 };

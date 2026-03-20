@@ -108,12 +108,12 @@ const Maintenance: React.FC<MaintenanceProps> = ({ data, auth, onAdd, onUpdate, 
     const limitReached = lastMaintUsage > 0 && usedSinceMaint >= v.maintenanceIntervalKm;
 
     if (limitReached) {
-      // Cria registo de manutenção Geral automático
+      // Cria registo de manutenção Preventiva automática
       const autoRecord: MaintenanceRecord = {
         id: crypto.randomUUID(),
         vehicleId: v.id,
-        type: MaintenanceType.GENERAL,
-        description: `Manutenção geral automática — limite de ${v.maintenanceIntervalKm.toLocaleString()} ${isHourBased ? 'horas' : 'km'} atingido (leitura: ${numVal.toLocaleString()} ${isHourBased ? 'h' : 'km'}).`,
+        type: MaintenanceType.PREVENTIVE,
+        description: `Manutenção preventiva automática — limite de ${v.maintenanceIntervalKm.toLocaleString()} ${isHourBased ? 'horas' : 'km'} atingido (leitura: ${numVal.toLocaleString()} ${isHourBased ? 'h' : 'km'}).`,
         responsible: 'Sistema',
         date: today,
         currentKm: isHourBased ? 0 : numVal,
