@@ -7,17 +7,15 @@ import { syncEngine } from './syncEngine';
  * Em background, tenta puxar atualizações da API e mesclar localmente.
  */
 export const dataFetchCollection = async <T extends { id: string }>(collection: string): Promise<T[]> => {
-  // 1. Tenta carregar do cache local imediatamente
-  let localData = await localGetAll<T>(collection);
+  // 1. Carrega do cache local imediatamente (Offline-first)
+  const localData = await localGetAll<T>(collection);
 
   // 2. Tenta fazer um "pull" da DB em background (só se online)
   if (navigator.onLine) {
     apiFetchUserCollection<T>(collection)
       .then(async (apiData) => {
-        // Para cada item da API, atualiza o local (se o API for mais recente ou se não houver conflito complexo)
-        // Por simplicidade, assumimos que a API é a fonte final para os itens "synced".
-        // Itens que estão "pending" localmente não devem ser sobrescritos pelo fetch, 
-        // mas a nossa syncQueue vai cuidar deles.
+        // Para itens da API: actualiza apenas os que não têm escrita local pendente.
+        // Itens 'pending' têm escrita mais recente localmente — não sobrescrever.
         const db = await initDB();
         const tx = db.transaction(collection as any, 'readwrite');
         for (const item of apiData) {
@@ -33,12 +31,11 @@ export const dataFetchCollection = async <T extends { id: string }>(collection: 
       });
   }
 
-  // Volta os dados locais atualizados que já tínhamos (Offline-first)
   return localData;
 };
 
 export const dataFetchAdmin = async (): Promise<any> => {
-  let admin = await localGetAdmin();
+  const admin = await localGetAdmin();
 
   if (navigator.onLine) {
     apiFetchAdmin().then(apiAdmin => {
@@ -51,37 +48,73 @@ export const dataFetchAdmin = async (): Promise<any> => {
   return admin;
 };
 
-export const dataSaveDoc = async (collection: string, docId: string, data: any): Promise<void> => {
+/**
+ * Cria um novo documento — enfileira como CREATE.
+ */
+export const dataCreateDoc = async (collection: string, docId: string, data: any): Promise<void> => {
   const timestamp = new Date().toISOString();
-  
-  // Adiciona metadados
   const payload = {
     ...data,
     id: docId,
     syncStatus: 'pending',
     updatedAt: timestamp,
-    createdAt: data.createdAt || timestamp
+    createdAt: timestamp,
   };
 
-  // 1. Salva localmente IMEDIATAMENTE (UI reativa)
+  // 1. Salva localmente IMEDIATAMENTE (UI reactiva)
   if (collection === 'admin') {
     await localPutAdmin(payload);
   } else {
     await localPut(collection, payload);
   }
 
-  // 2. Adiciona à fila de sync
+  // 2. Enfileira como CREATE para o cloud
+  await enqueueSync(collection, docId, 'CREATE', payload);
+
+  // 3. Tenta sincronizar em background
+  syncEngine.attemptSync().catch(console.warn);
+};
+
+/**
+ * Actualiza um documento existente — enfileira como UPDATE.
+ */
+export const dataUpdateDoc = async (collection: string, docId: string, data: any): Promise<void> => {
+  const timestamp = new Date().toISOString();
+  const payload = {
+    ...data,
+    id: docId,
+    syncStatus: 'pending',
+    updatedAt: timestamp,
+    createdAt: data.createdAt || timestamp,
+  };
+
+  // 1. Salva localmente IMEDIATAMENTE
+  if (collection === 'admin') {
+    await localPutAdmin(payload);
+  } else {
+    await localPut(collection, payload);
+  }
+
+  // 2. Enfileira como UPDATE para o cloud
   await enqueueSync(collection, docId, 'UPDATE', payload);
 
   // 3. Tenta sincronizar em background
   syncEngine.attemptSync().catch(console.warn);
 };
 
+/**
+ * @deprecated Usar dataCreateDoc ou dataUpdateDoc conforme o caso.
+ * Mantido por retrocompatibilidade com lib/db.ts.
+ */
+export const dataSaveDoc = async (collection: string, docId: string, data: any): Promise<void> => {
+  await dataUpdateDoc(collection, docId, data);
+};
+
 export const dataDeleteDoc = async (collection: string, docId: string): Promise<void> => {
   // 1. Deleta localmente IMEDIATAMENTE
   await localDelete(collection, docId);
 
-  // 2. Adiciona à fila de sync (passando sem payload, apenas docId)
+  // 2. Enfileira como DELETE para o cloud
   await enqueueSync(collection, docId, 'DELETE');
 
   // 3. Tenta sincronizar

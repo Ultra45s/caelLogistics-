@@ -5,14 +5,20 @@ interface IElectronAPI {
   sqliteDelete: (collection: string, id: string) => Promise<{ success: boolean; error?: string }>;
   sqliteLogin: (email: string, pass: string) => Promise<{ success: boolean; user?: any; error?: string }>;
   sqliteRegisterUser: (email: string, pass: string, name: string) => Promise<{ success: boolean; error?: string }>;
-  
+
+  // Sync Queue persistida no SQLite (Electron)
+  syncQueueEnqueue: (syncOp: any) => Promise<{ success: boolean; error?: string }>;
+  syncQueueGetAll: () => Promise<any[]>;
+  syncQueueRemove: (id: string) => Promise<{ success: boolean; error?: string }>;
+  syncQueueUpdate: (syncOp: any) => Promise<{ success: boolean; error?: string }>;
+
   onUpdateAvailable: (callback: () => void) => void;
   onUpdateDownloaded: (callback: () => void) => void;
   restartApp: () => void;
-  
+
   exportBackup: () => Promise<{ success: boolean; error?: string }>;
   importBackup: () => Promise<{ success: boolean; error?: string }>;
-  
+
   ping: () => Promise<string>;
 }
 

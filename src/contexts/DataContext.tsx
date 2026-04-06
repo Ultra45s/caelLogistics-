@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { AppState, Driver, Vehicle, Operation, MaintenanceRecord, Employee, EPI, Delivery, AdminProfile, FuelRecord, AppNotification } from '../types';
 import { loadFullState, saveToFirestore, deleteFromFirestore, loadAuth } from '../lib/db';
-import { initDB } from '../services/localDb';
+import { dataCreateDoc, dataUpdateDoc } from '../services/dataService';
+import { initDB, localGet } from '../services/localDb';
 import { useAuth } from './AuthContext';
+import { useSync } from './SyncContext';
 
 interface DataContextType {
   data: AppState;
@@ -40,6 +42,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [data, setData] = useState<AppState>(defaultState);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const { refreshPendingCount } = useSync();
 
   const loadData = useCallback(async (uid: string) => {
     try {
@@ -63,28 +66,34 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   }, [user?.uid]);
 
+  /**
+   * addItem — enfileira CREATE (novo documento)
+   */
   const addItem = async (collection: string, item: any) => {
-    const uid = user?.uid || 'public-demo';
     try {
-      await saveToFirestore(uid, collection, item.id, item);
+      await dataCreateDoc(collection, item.id, item);
       setData(prev => {
         const collectionData = (prev as any)[collection] || [];
-        return { ...prev, [collection]: [...collectionData, item] };
+        return { ...prev, [collection]: [...collectionData, { ...item, syncStatus: 'pending' }] };
       });
+      refreshPendingCount();
     } catch (e) {
       console.error(`Erro ao adicionar em ${collection}:`, e);
       throw e;
     }
   };
 
+  /**
+   * updateItem — enfileira UPDATE (documento existente)
+   */
   const updateItem = async (collection: string, item: any) => {
-    const uid = user?.uid || 'public-demo';
     try {
-      await saveToFirestore(uid, collection, item.id, item);
+      await dataUpdateDoc(collection, item.id, item);
       setData(prev => ({
         ...prev,
-        [collection]: ((prev as any)[collection] || []).map((i: any) => i.id === item.id ? item : i)
+        [collection]: ((prev as any)[collection] || []).map((i: any) => i.id === item.id ? { ...item, syncStatus: 'pending' } : i)
       }));
+      refreshPendingCount();
     } catch (e) {
       console.error(`Erro ao atualizar em ${collection}:`, e);
       throw e;
@@ -92,13 +101,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const deleteItem = async (collection: string, id: string) => {
-    const uid = user?.uid || 'public-demo';
     try {
-      await deleteFromFirestore(uid, collection, id);
+      await deleteFromFirestore('', collection, id);
       setData(prev => ({
         ...prev,
         [collection]: ((prev as any)[collection] || []).filter((i: any) => i.id !== id)
       }));
+      refreshPendingCount();
     } catch (e) {
       console.error(`Erro ao deletar em ${collection}:`, e);
       throw e;

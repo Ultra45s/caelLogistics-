@@ -1,6 +1,6 @@
 import { AppState, Operation, Driver, Vehicle, MaintenanceRecord, Employee, EPI, Delivery, AdminProfile, AssetType, FuelRecord, MaintenanceType } from '../types';
-import { dataFetchCollection, dataFetchAdmin, dataSaveDoc, dataDeleteDoc } from '../services/dataService';
-import { localGet } from '../services/localDb';
+import { dataFetchCollection, dataFetchAdmin, dataCreateDoc, dataUpdateDoc, dataDeleteDoc } from '../services/dataService';
+import { localGet, localGetAll } from '../services/localDb';
 
 // --- Funções de Utilidade ---
 
@@ -32,7 +32,15 @@ export const generateTestData = async () => {
 // --- Proxy para o Data Service (Offline-First) ---
 
 export const saveToFirestore = async (uid: string, col: string, id: string, data: any) => {
-  await dataSaveDoc(col, id, data);
+  // Detecta se o documento já existe para usar CREATE vs UPDATE
+  const existing = col === 'admin'
+    ? await dataFetchAdmin()
+    : (await localGet(col, id));
+  if (existing) {
+    await dataUpdateDoc(col, id, data);
+  } else {
+    await dataCreateDoc(col, id, data);
+  }
 };
 
 export const fetchCollection = async <T extends { id: string }>(uid: string, col: string): Promise<T[]> => {
@@ -77,8 +85,7 @@ export const loadFullState = async (uid: string): Promise<Partial<AppState>> => 
     deliveries,
     admin: admin || undefined,
     notifications,
-    fuelRecords,
-    auth: loadAuth() || undefined
+    fuelRecords
   };
 };
 

@@ -1,7 +1,7 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { 
-  Driver, Vehicle, Operation, MaintenanceRecord, 
-  Employee, EPI, Delivery, AppNotification, AdminProfile, FuelRecord 
+import {
+  Driver, Vehicle, Operation, MaintenanceRecord,
+  Employee, EPI, Delivery, AppNotification, AdminProfile, FuelRecord
 } from '../types';
 
 export interface SyncOp {
@@ -41,7 +41,7 @@ export const initDB = () => {
           'drivers', 'vehicles', 'operations', 'maintenanceRecords',
           'fuelRecords', 'employees', 'epis', 'deliveries', 'notifications', 'admin'
         ];
-        
+
         collections.forEach(col => {
           if (!db.objectStoreNames.contains(col as any)) {
             db.createObjectStore(col as any, { keyPath: 'id' });
@@ -57,20 +57,11 @@ export const initDB = () => {
   return dbPromise;
 };
 
-declare global {
-  interface Window {
-    api?: {
-      sqliteGet: (col: string, id: string) => Promise<any>;
-      sqliteGetAll: (col: string) => Promise<any[]>;
-      sqlitePut: (col: string, data: any) => Promise<{ success: boolean; error?: string }>;
-      sqliteDelete: (col: string, id: string) => Promise<{ success: boolean; error?: string }>;
-      sqliteLogin: (email: string, pass: string) => Promise<{ success: boolean; user?: any; error?: string }>;
-      sqliteRegisterUser: (email: string, pass: string, name: string) => Promise<{ success: boolean; user?: any; error?: string }>;
-    };
-  }
-}
+// Nota: a tipagem de window.api está definida em src/electron.d.ts (IElectronAPI).
+// Não redeclarar aqui para evitar conflito de tipos.
 
-// Generic Local Operations
+// ─── Generic Local Operations ─────────────────────────────────────────────────
+
 export const localGet = async <T>(collection: string, id: string): Promise<T | undefined> => {
   if (window.api) return window.api.sqliteGet(collection, id);
   const db = await initDB();
@@ -110,9 +101,16 @@ export const localPutAdmin = async (data: AdminProfile): Promise<void> => {
   await localPut('admin', { ...data, id: 'profile' }); // Force id to be 'profile'
 };
 
-// Sync Queue Operations
-export const enqueueSync = async (collection: string, docId: string, action: 'CREATE' | 'UPDATE' | 'DELETE', payload?: any) => {
-  const db = await initDB();
+// ─── Sync Queue Operations ────────────────────────────────────────────────────
+// No modo Electron: usa SQLite via IPC (dados persistem em disco ao reiniciar).
+// No browser: usa IndexedDB.
+
+export const enqueueSync = async (
+  collection: string,
+  docId: string,
+  action: 'CREATE' | 'UPDATE' | 'DELETE',
+  payload?: any
+) => {
   const syncOp: SyncOp = {
     id: crypto.randomUUID(),
     collection,
@@ -122,20 +120,46 @@ export const enqueueSync = async (collection: string, docId: string, action: 'CR
     createdAt: new Date().toISOString(),
     retryCount: 0
   };
+
+  // Electron: persiste no SQLite para sobreviver a reinícios offline
+  if (window.api?.syncQueueEnqueue) {
+    await window.api.syncQueueEnqueue(syncOp);
+    return;
+  }
+
+  // Browser: usa IndexedDB
+  const db = await initDB();
   await db.put('sync_queue', syncOp);
 };
 
 export const getSyncQueue = async (): Promise<SyncOp[]> => {
+  // Electron: lê do SQLite
+  if (window.api?.syncQueueGetAll) {
+    return window.api.syncQueueGetAll();
+  }
+  // Browser: lê do IndexedDB
   const db = await initDB();
   return db.getAll('sync_queue');
 };
 
 export const removeSyncOp = async (id: string): Promise<void> => {
+  // Electron: remove do SQLite
+  if (window.api?.syncQueueRemove) {
+    await window.api.syncQueueRemove(id);
+    return;
+  }
+  // Browser: remove do IndexedDB
   const db = await initDB();
   await db.delete('sync_queue', id);
 };
 
 export const updateSyncOp = async (syncOp: SyncOp): Promise<void> => {
+  // Electron: atualiza no SQLite
+  if (window.api?.syncQueueUpdate) {
+    await window.api.syncQueueUpdate(syncOp);
+    return;
+  }
+  // Browser: atualiza no IndexedDB
   const db = await initDB();
   await db.put('sync_queue', syncOp);
 };

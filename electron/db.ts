@@ -76,11 +76,11 @@ export function initLocalDB(dbPath: string, ipcMain: IpcMain) {
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(rawPass, salt);
       const newUser = { id: crypto.randomUUID(), email, passwordHash: hash, name: adminName, role: 'offline_admin' };
-      
+
       const insertStmt = db.prepare(`INSERT INTO users (id, data) VALUES (?, ?)`);
       insertStmt.run(newUser.id, JSON.stringify(newUser));
       return { success: true, user: { id: newUser.id, email: newUser.email, name: newUser.name } };
-    } catch(e) {
+    } catch (e) {
       return { success: false, error: String(e) };
     }
   });
@@ -89,20 +89,68 @@ export function initLocalDB(dbPath: string, ipcMain: IpcMain) {
     try {
       const stmt = db.prepare(`SELECT data FROM users`);
       const allUsers = stmt.all().map((r: any) => JSON.parse(r.data));
-      
+
       // Existe usuário manual (offline admin) e usuário default public-demo configurado no react
       const user = allUsers.find((u: any) => u.email === email);
       if (!user) return { success: false, error: 'Utilizador não encontrado no modo local.' };
-      
+
       const isMatch = await bcrypt.compare(rawPass, user.passwordHash);
       if (isMatch) {
-         return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+        return { success: true, user: { id: user.id, email: user.email, name: user.name } };
       }
       return { success: false, error: 'Senha incorreta.' };
-    } catch(e) {
+    } catch (e) {
       return { success: false, error: String(e) };
     }
   });
 
   ipcMain.handle('ping', () => 'pong');
+
+  // ─── Sync Queue via SQLite ──────────────────────────────────────────────────
+  // Garante que a fila de sincronização persiste no SQLite no modo Electron,
+  // evitando perda de dados pendentes quando o app é fechado offline.
+
+  ipcMain.handle('syncQueue:enqueue', (_event: any, syncOp: any) => {
+    try {
+      const stmt = db.prepare(`INSERT OR REPLACE INTO sync_queue (id, data) VALUES (?, ?)`);
+      stmt.run(syncOp.id, JSON.stringify(syncOp));
+      return { success: true };
+    } catch (e) {
+      console.error('SyncQueue enqueue error:', e);
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('syncQueue:getAll', (_event: any) => {
+    try {
+      const stmt = db.prepare(`SELECT data FROM sync_queue`);
+      const rows = stmt.all();
+      return rows.map((r: any) => JSON.parse(r.data));
+    } catch (e) {
+      console.error('SyncQueue getAll error:', e);
+      return [];
+    }
+  });
+
+  ipcMain.handle('syncQueue:remove', (_event: any, id: string) => {
+    try {
+      const stmt = db.prepare(`DELETE FROM sync_queue WHERE id = ?`);
+      stmt.run(id);
+      return { success: true };
+    } catch (e) {
+      console.error('SyncQueue remove error:', e);
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('syncQueue:update', (_event: any, syncOp: any) => {
+    try {
+      const stmt = db.prepare(`INSERT OR REPLACE INTO sync_queue (id, data) VALUES (?, ?)`);
+      stmt.run(syncOp.id, JSON.stringify(syncOp));
+      return { success: true };
+    } catch (e) {
+      console.error('SyncQueue update error:', e);
+      return { success: false, error: String(e) };
+    }
+  });
 }
