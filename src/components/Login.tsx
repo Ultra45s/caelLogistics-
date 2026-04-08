@@ -191,14 +191,16 @@ const Login: React.FC = () => {
                     )}
 
                     <form onSubmit={showForgotPassword ? handleResetPassword : (isRegistering ? handleRegister : handleLogin)} className="space-y-6 text-white">
-                        {/* Offline Mode Toggle Layer */}
-                        <div className="flex items-center justify-between px-6 py-4 bg-white/5 border border-white/10 rounded-2xl mb-6">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acesso Restrito / Offline</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" checked={isOfflineMode} onChange={() => setIsOfflineMode(!isOfflineMode)} />
-                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                        </div>
+                        {/* Offline Mode Toggle Layer (Only in Desktop app) */}
+                        {window.api && (
+                            <div className="flex items-center justify-between px-6 py-4 bg-white/5 border border-white/10 rounded-2xl mb-6">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acesso Restrito / Offline</span>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" className="sr-only peer" checked={isOfflineMode} onChange={() => setIsOfflineMode(!isOfflineMode)} />
+                                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                        )}
                         
                         {isRegistering && !showForgotPassword && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -315,7 +317,7 @@ const Login: React.FC = () => {
                         </button>
 
                         <div className="flex flex-col gap-4 pt-4">
-                            {!isRegistering && !showForgotPassword && (
+                            {!isRegistering && !showForgotPassword && window.api && (
                                 <button
                                     type="button"
                                     onClick={() => {
