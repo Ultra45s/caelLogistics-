@@ -2,6 +2,8 @@
   "name": "cael-logistics",
   "private": true,
   "version": "1.0.0",
+  "description": "Sistema Profissional de Gestao de Transportes e Logistica.",
+  "author": "CAEL Logistics",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -11,7 +13,9 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:3010 && tsc -p tsconfig.electron.json && esbuild electron/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.cjs --external:electron && electron .\"",
-    "electron:build": "tsc -p tsconfig.electron.json && esbuild electron/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.cjs --external:electron && vite build && electron-builder"
+    "electron:build": "tsc -p tsconfig.electron.json && esbuild electron/preload.ts --bundle --platform=node --format=cjs --outfile=dist-electron/preload.cjs --external:electron && vite build && electron-builder",
+    "build:exe": "npm run electron:build -- --win && node -e \"const fs=require('fs');const path=require('path');const dest=path.join(process.env.USERPROFILE,'Documents','InstallerApp');fs.mkdirSync(dest,{recursive:true});const exe=fs.readdirSync('dist_electron').find(f=>f.endsWith('.exe'));if(exe){fs.copyFileSync(path.join('dist_electron',exe),path.join(dest,exe));console.log('\\n>> Instalador copiado com sucesso para: ' + path.join(dest,exe));}else{console.log('\\n>> Erro: Instalador (.exe) nao encontrado em dist_electron.');}\"",
+    "build:setup": "npm run electron:build -- --win && node -e \"const fs=require('fs');const path=require('path');const dest=path.join(process.env.USERPROFILE,'Documents','Installers');fs.mkdirSync(dest,{recursive:true});const exe=fs.readdirSync('dist_electron').find(f=>f.endsWith('.exe'));if(exe){fs.copyFileSync(path.join('dist_electron',exe),path.join(dest,exe));console.log('\\n>> Setup guiado (Wizard) criado com sucesso em: ' + path.join(dest,exe));}else{console.log('\\n>> Erro: Setup (.exe) nao encontrado.');}\""
   },
   "dependencies": {
     "@google/genai": "1.3.0",
@@ -66,6 +70,13 @@
           "repo": "caelLogistics-"
         }
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CAEL Logistics"
     },
     "publish": [
       {

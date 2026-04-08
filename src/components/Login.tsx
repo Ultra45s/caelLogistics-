@@ -326,7 +326,7 @@ const Login: React.FC = () => {
                                     }}
                                     className="w-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 font-black py-4 rounded-xl uppercase tracking-[0.15em] text-[10px] flex items-center justify-center gap-3 transition-all active:scale-95"
                                 >
-                                    <UserPlus size={18} /> CRIAR PERFIL OFFLINE (USO LOCAL)
+                                    <UserPlus size={18} /> CRIAR NOVA CONTA (USO LOCAL OFFLINE)
                                 </button>
                             )}
 
@@ -347,8 +347,8 @@ const Login: React.FC = () => {
                                 className={`w-full text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-3 px-6 rounded-xl border border-transparent hover:border-white/10 flex items-center justify-center gap-2 text-blue-400/80 hover:text-blue-300 bg-blue-500/5`}
                             >
                                 {isRegistering 
-                                    ? 'Já possui acesso? Fazer Login' 
-                                    : 'Novo operador? Solicitar acesso cloud'}
+                                    ? 'Já possui conta? Fazer Login' 
+                                    : 'Não tem conta? Criar conta Cloud'}
                             </button>
 
                             {!isRegistering && !isOfflineMode && (
